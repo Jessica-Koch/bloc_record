@@ -22,7 +22,7 @@ module BlocRecord
       # replace any - with _ using tr
       string.tr!("-", "_")
       string.downcase
-    end
+    end 
 
     # converts String or Numeric to a SQL string
     def sql_strings(value)
@@ -36,7 +36,7 @@ module BlocRecord
       end
     end
 
-    # takes options hash and returns has with strings as keys.
+    # takes options hash and returns hash with strings as keys.
     def convert_keys(options)
       options.keys.each {|k| options[k.to_s] = options.delete(k) if k.kind_of?(Symbol)}
       options
@@ -50,7 +50,7 @@ module BlocRecord
     # overwrites the instance var values with stored 
     # values from DB – discards unsaved changes to obj
     def reload_obj(dirty_obj)
-      persisted_obj = dirty_obj.class.find(dirty_obj.id)
+      persisted_obj = dirty_obj.class.find_one(dirty_obj.id)
       dirty_obj.instance_variables.each do |instance_variable|
         dirty_obj.instance_variable_set(instance_variable, persisted_obj.instance_variable_get(instance_variable))
       end

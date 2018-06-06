@@ -11,7 +11,6 @@ module Persistence
     self.save! rescue false
   end
 
-
   def save!
     # sets an id on the object if it is not present
     unless self.id
