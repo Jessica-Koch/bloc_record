@@ -15,20 +15,29 @@ module Selection
     end
   end
 
-  def find_each(val)
-
-    all.each do |n|
-      puts "reached the top"
-      puts n
-      yield(val)
-      puts "reached the bottom"
+  def my_map(arr)
+    new_array = []
+    for element in arr
+     new_array.push yield element
     end
+
+    new_array
   end
 
-  
+  def find_each(options, &block)
+    batch_size = options.delete(:batch_size) || 100
 
-  def find_in_batch(start, batch_size)
-    puts "reached yield"
+    ind_in_batches(batch_size).each {|row| yield(row)}
+  end
+
+  def find_in_batches(batch_size, &block)
+
+    rows = connection.get_first_row <<-SQL
+        SELECT #{columns.join ','} FROM #{table}
+        LIMIT #{batch_size}
+      SQL
+
+      rows_to_array(rows)
   end
 
   # finds exact record by id
