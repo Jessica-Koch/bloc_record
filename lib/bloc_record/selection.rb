@@ -130,7 +130,96 @@ module Selection
     rows_to_array(rows)
   end
 
+  def where
+    if args.count > 1
+      expression = args.shift
+      params = args
+    else
+      case args.first
+      when String
+        expression = args.first
+      when Hash 
+        expression_hash = BlocRecord::Utility.convert_keys(args.first)
+        expression = expression_hash.map {|key, value| "#{key}=#{BlocRecord::Utility.sql_strings(value)}"}.join(" and ")
+      end
+    end
+
+    sql = <<-SQL
+      SELECT #{columns.join ','} FROM #{table}
+      WHERE #{expression};
+    SQL
+
+    rows = connection.execute(sql, params)
+    rows_to_array(rows)
+  end
+
+  def order(*args)
+    if args.count > 1
+      args =  args.map do |a| 
+        if a.class == Hash
+          hash_to_string(a)
+        else 
+          a.to_s
+        end
+      order = args.join(",")
+    else 
+      order = order.first.to_s
+    end
+
+    rows = connection.execute <<-SQL
+      SELECT * FROM #{table}
+      ORDER BY #{order};
+    SQL
+    rows_to_array(rows)
+  end
+
+  def join(*args)
+    if args.count > 1
+      joins = args.map { |arg| "INNER JOIN #{arg} ON #{arg}.#{table}_id = #{table}.id"}.join(" ")
+        rows = connection.execute <<-SQL
+          SELECT * FROM #{table} #{joins}
+      SQL
+    else
+      case args.first
+      when Hash
+        joins = args.map do |arg| 
+          "INNER JOIN #{arg.keys.first} ON #{arg.keys.first}.#{table}_id = #{table}.id"
+          "INNER JOIN #{arg.values.first} ON #{arg.values.first}.#{arg.keys.first}_id = #{arg.keys.first}.id"
+        end
+        
+        joins = joins.join(" ")
+        rows = connection.execute <<-SQL
+          SELECT * FROM #{table} #{joins}
+        SQL
+      when String
+        rows = connection.execute <<-SQL
+          SELECT * FROM #{table} #{BlocRecord::Utility.sql_strings(args.first)};
+        SQL
+      when Symbol
+        rows = connection.execute <<-SQL
+          SELECT * FROM #{table}
+          INNER JOIN #{args.first} ON #{args.first}.#{table}_id = #{table}.id
+        SQL
+      end
+
+ 
+    rows_to_array(rows)
+  end
+
   private
+  def asc_or_desc(str)
+    if !!/\bdesc\b/i.match('desc')
+      'DESC'
+    elsif !!/\basc\b/i.match('asc')
+      'ASC'
+    else 
+      return
+    end
+  end
+
+  def hash_to_string(h)
+     return a.map{|k,v| [k.to_s, v.to_s]}.join(' ')
+  end
 
   def init_object_from_row(row)
     if row
