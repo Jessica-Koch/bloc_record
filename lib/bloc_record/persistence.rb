@@ -56,6 +56,7 @@ module Persistence
     self.class.update(self.id, updates)
   end
 
+  
   module ClassMethods
     def create(attrs)
       attrs = BlocRecord::Utility.convert_keys(attrs)
