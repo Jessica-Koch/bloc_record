@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
   s.homepage = 'http://rubygems.org/gems/bloc_record'
   s.license = 'MIT'
-  s.add_runtime_dependency 'paint', '~> 2.0.1'
   s.add_runtime_dependency 'sqlite3', '~> 1.3'
+  s.add_runtime_dependency 'pg', '~> 1.0'
+  s.add_runtime_dependency 'activesupport'
 end

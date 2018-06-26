@@ -1,5 +1,6 @@
 # connection related code
 require 'sqlite3'
+require 'pg'
 
 module Connection
   def connection
